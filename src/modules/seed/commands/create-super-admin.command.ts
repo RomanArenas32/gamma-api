@@ -59,7 +59,8 @@ export class CreateSuperAdminCommand {
       console.log(`Role: ${superAdmin.role}`);
       console.log('\n🔐 You can now login with these credentials');
     } catch (error) {
-      console.error('❌ Error creating super admin:', error.message);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Error creating super admin:', message);
     }
   }
 }

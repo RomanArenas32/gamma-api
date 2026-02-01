@@ -6,6 +6,7 @@ import { CommonModule } from './modules/common/common.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SeedModule } from './modules/seed/seed.module';
+import { EventsModule } from './modules/events/events.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/common/guards/roles.guard';
 import databaseConfig from './config/database.config';
@@ -23,6 +24,7 @@ import authConfig from './config/auth.config';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    EventsModule,
     SeedModule,
   ],
   controllers: [],

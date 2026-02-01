@@ -34,7 +34,8 @@ export class UsersController {
   @Roles(UserRole.LEVEL_1, UserRole.LEVEL_2)
   @ApiOperation({
     summary: 'Create a new user',
-    description: 'Only SUPER ADMIN (level_1) and ADMIN (level_2) can create users',
+    description:
+      'Only SUPER ADMIN (level_1) and ADMIN (level_2) can create users',
   })
   @ApiResponse({
     status: 201,
@@ -53,7 +54,10 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
   @ApiResponse({ status: 409, description: 'Username already exists' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
@@ -63,7 +67,8 @@ export class UsersController {
   @Roles(UserRole.LEVEL_1, UserRole.LEVEL_2, UserRole.LEVEL_3)
   @ApiOperation({
     summary: 'Get all users with pagination',
-    description: 'Only SUPER ADMIN, ADMIN and MODERATOR can list all users. Supports pagination and search.',
+    description:
+      'Only SUPER ADMIN, ADMIN and MODERATOR can list all users. Supports pagination and search.',
   })
   @ApiQuery({
     name: 'page',
@@ -80,7 +85,8 @@ export class UsersController {
   @ApiQuery({
     name: 'search',
     required: false,
-    description: 'Search term to filter users by username, firstName, or lastName',
+    description:
+      'Search term to filter users by username, firstName, or lastName',
     example: 'john',
   })
   @ApiResponse({
@@ -112,7 +118,10 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
   findAll(@Query() paginationQuery: PaginationQueryDto) {
     return this.usersService.findAllPaginated(paginationQuery);
   }
@@ -177,7 +186,10 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
@@ -197,7 +209,10 @@ export class UsersController {
   })
   @ApiResponse({ status: 204, description: 'User successfully deleted' })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
