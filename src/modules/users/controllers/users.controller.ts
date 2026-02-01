@@ -8,6 +8,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,9 +16,10 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from '../services/users.service';
-import { CreateUserDto, UpdateUserDto } from '../dto';
+import { CreateUserDto, UpdateUserDto, PaginationQueryDto } from '../dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/types/roles';
 
@@ -60,31 +62,59 @@ export class UsersController {
   @Get()
   @Roles(UserRole.LEVEL_1, UserRole.LEVEL_2, UserRole.LEVEL_3)
   @ApiOperation({
-    summary: 'Get all users',
-    description: 'Only SUPER ADMIN, ADMIN and MODERATOR can list all users',
+    summary: 'Get all users with pagination',
+    description: 'Only SUPER ADMIN, ADMIN and MODERATOR can list all users. Supports pagination and search.',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (starts at 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of items per page (max 100)',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search term to filter users by username, firstName, or lastName',
+    example: 'john',
   })
   @ApiResponse({
     status: 200,
-    description: 'List of all users',
+    description: 'Paginated list of users',
     schema: {
-      example: [
-        {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          username: 'johndoe',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'level_4',
-          isActive: true,
-          createdAt: '2024-01-31T00:00:00.000Z',
-          updatedAt: '2024-01-31T00:00:00.000Z',
+      example: {
+        data: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            username: 'johndoe',
+            firstName: 'John',
+            lastName: 'Doe',
+            role: 'level_4',
+            isActive: true,
+            createdAt: '2024-01-31T00:00:00.000Z',
+            updatedAt: '2024-01-31T00:00:00.000Z',
+          },
+        ],
+        meta: {
+          total: 100,
+          page: 1,
+          limit: 10,
+          totalPages: 10,
+          hasNextPage: true,
+          hasPreviousPage: false,
         },
-      ],
+      },
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.usersService.findAllPaginated(paginationQuery);
   }
 
   @Get(':id')
