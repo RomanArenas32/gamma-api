@@ -30,7 +30,8 @@ export class PaginationQueryDto {
   limit?: number = 10;
 
   @ApiPropertyOptional({
-    description: 'Search term to filter users by username, firstName, or lastName',
+    description:
+      'Search term to filter users by username, firstName, or lastName',
     example: 'john',
   })
   @IsOptional()

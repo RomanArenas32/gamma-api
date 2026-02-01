@@ -48,16 +48,18 @@ export class UsersService {
     const skip = (page - 1) * limit;
 
     // Build where clause for search
-    const where: any = search
+    const where = search
       ? [
           { username: Like(`%${search}%`) },
           { firstName: Like(`%${search}%`) },
           { lastName: Like(`%${search}%`) },
         ]
-      : {};
+      : undefined;
 
     // Get total count
-    const total = await this.usersRepository.count({ where });
+    const total = await this.usersRepository.count(
+      where ? { where } : undefined,
+    );
 
     // Get paginated users
     const data = await this.usersRepository.find({
