@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
 import { EventsRepository } from '../repositories/events.repository';
 import { CreateEventDto, UpdateEventDto, QueryEventDto } from '../dto';
@@ -14,12 +13,9 @@ import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly eventsRepository: EventsRepository) { }
+  constructor(private readonly eventsRepository: EventsRepository) {}
 
-  async create(
-    createEventDto: CreateEventDto,
-    user: User,
-  ): Promise<Event> {
+  async create(createEventDto: CreateEventDto, user: User): Promise<Event> {
     if (user.role === UserRole.LEVEL_4) {
       if (!user.assignedCities || user.assignedCities.length === 0) {
         throw new ForbiddenException(
@@ -27,11 +23,11 @@ export class EventsService {
         );
       }
 
-      const cityIds = user.assignedCities.map(city => city.id);
+      const cityIds = user.assignedCities.map((city) => city.id);
       if (!cityIds.includes(createEventDto.cityId)) {
         throw new ForbiddenException(
           'No tienes permisos para crear eventos en esta ciudad. Solo puedes crear eventos en: ' +
-          user.assignedCities.map(c => c.name).join(', '),
+            user.assignedCities.map((c) => c.name).join(', '),
         );
       }
     }

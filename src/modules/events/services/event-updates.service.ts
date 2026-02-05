@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { EventUpdatesRepository } from '../repositories/event-updates.repository';
 import { EventsRepository } from '../repositories/events.repository';
 import { CreateEventUpdateDto } from '../dto';

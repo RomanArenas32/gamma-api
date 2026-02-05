@@ -150,7 +150,9 @@ export class SeedCitiesCommand {
     const existingCities = await this.citiesRepository.find();
 
     if (existingCities.length > 0) {
-      console.log(`⚠️  Cities already seeded (${existingCities.length} found). Skipping...`);
+      console.log(
+        `⚠️  Cities already seeded (${existingCities.length} found). Skipping...`,
+      );
       return;
     }
 

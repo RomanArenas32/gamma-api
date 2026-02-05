@@ -19,7 +19,12 @@ import {
 } from '@nestjs/swagger';
 import { EventsService } from '../services/events.service';
 import { EventUpdatesService } from '../services/event-updates.service';
-import { CreateEventDto, UpdateEventDto, QueryEventDto, CreateEventUpdateDto } from '../dto';
+import {
+  CreateEventDto,
+  UpdateEventDto,
+  QueryEventDto,
+  CreateEventUpdateDto,
+} from '../dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/types/roles';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -154,7 +159,8 @@ export class EventsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Agregar actualización a un evento',
-    description: 'Registrar un nuevo seguimiento del evento con datos en tiempo real',
+    description:
+      'Registrar un nuevo seguimiento del evento con datos en tiempo real',
   })
   @ApiParam({
     name: 'id',
@@ -180,7 +186,8 @@ export class EventsController {
   @Get(':id/updates')
   @ApiOperation({
     summary: 'Obtener historial de actualizaciones de un evento',
-    description: 'Ver todas las actualizaciones registradas de un evento específico',
+    description:
+      'Ver todas las actualizaciones registradas de un evento específico',
   })
   @ApiParam({
     name: 'id',
@@ -211,10 +218,7 @@ export class EventsController {
   @ApiResponse({ status: 204, description: 'Actualización eliminada' })
   @ApiResponse({ status: 403, description: 'Sin permisos' })
   @ApiResponse({ status: 404, description: 'Actualización no encontrada' })
-  removeUpdate(
-    @Param('updateId') updateId: string,
-    @CurrentUser() user: User,
-  ) {
+  removeUpdate(@Param('updateId') updateId: string, @CurrentUser() user: User) {
     return this.eventUpdatesService.remove(updateId, user.id);
   }
 }

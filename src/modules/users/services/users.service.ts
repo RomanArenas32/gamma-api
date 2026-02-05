@@ -62,7 +62,7 @@ export class UsersService {
 
     // Build where clause for search and exclude level_1 users
     const baseWhere = { role: Not(UserRole.LEVEL_1) };
-    
+
     const where = search
       ? [
           { ...baseWhere, username: Like(`%${search}%`) },
@@ -121,14 +121,17 @@ export class UsersService {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
-    const { assignedCityIds, ...userData } = updateUserDto as any;
+    const { assignedCityIds, ...userData } = updateUserDto as UpdateUserDto & {
+      assignedCityIds?: string[];
+    };
 
     Object.assign(user, userData);
 
     // Update assigned cities if provided
     if (assignedCityIds !== undefined) {
       if (assignedCityIds && assignedCityIds.length > 0) {
-        user.assignedCities = await this.citiesService.findByIds(assignedCityIds);
+        user.assignedCities =
+          await this.citiesService.findByIds(assignedCityIds);
       } else {
         user.assignedCities = [];
       }
