@@ -4,8 +4,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { UserRole } from '../../common/types/roles';
+import { City } from '../../cities/entities/city.entity';
 
 @Entity('users')
 export class User {
@@ -33,6 +36,14 @@ export class User {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @ManyToMany(() => City, { eager: true })
+  @JoinTable({
+    name: 'user_cities',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'city_id', referencedColumnName: 'id' },
+  })
+  assignedCities: City[];
 
   @CreateDateColumn()
   createdAt: Date;

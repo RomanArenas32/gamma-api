@@ -4,8 +4,10 @@ import {
   MinLength,
   IsEnum,
   IsOptional,
+  IsArray,
+  IsUUID,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../common/types/roles';
 
 export class CreateUserDto {
@@ -55,4 +57,14 @@ export class CreateUserDto {
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;
+
+  @ApiPropertyOptional({
+    description: 'IDs de ciudades asignadas (solo para usuarios level_4)',
+    type: [String],
+    example: ['uuid-1', 'uuid-2'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  assignedCityIds?: string[];
 }

@@ -9,6 +9,7 @@ import {
   Min,
   Max,
   MaxLength,
+  IsUUID,
 } from 'class-validator';
 import { EventType } from '../entities/event.entity';
 
@@ -57,14 +58,11 @@ export class CreateEventDto {
   address: string;
 
   @ApiProperty({
-    description: 'Ciudad',
-    example: 'La Plata',
-    maxLength: 100,
+    description: 'ID de la ciudad (partido) de la Provincia de Buenos Aires',
+    example: 'uuid-ciudad',
   })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  city: string;
+  @IsUUID('4')
+  cityId: string;
 
   @ApiProperty({
     description: 'Latitud de la ubicación',

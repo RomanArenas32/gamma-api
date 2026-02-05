@@ -9,28 +9,37 @@ import { Event, EventStatus } from '../entities/event.entity';
 import { PaginatedResponse } from '../../common/dto';
 import { Between, Like } from 'typeorm';
 import { UserRole } from '../../common/types/roles';
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class EventsService {
   constructor(private readonly eventsRepository: EventsRepository) {}
 
-  async create(
-    createEventDto: CreateEventDto,
-    userId: string,
-    userRole: UserRole,
-  ): Promise<Event> {
-    // Los usuarios level_4 (standard user) necesitan aprobación
-    // Los usuarios level_3+ (moderador o superior) se auto-aprueban
+  async create(createEventDto: CreateEventDto, user: User): Promise<Event> {
+    if (user.role === UserRole.LEVEL_4) {
+      if (!user.assignedCities || user.assignedCities.length === 0) {
+        throw new ForbiddenException(
+          'No tienes ciudades asignadas. Contacta al administrador.',
+        );
+      }
+
+      const cityIds = user.assignedCities.map((city) => city.id);
+      if (!cityIds.includes(createEventDto.cityId)) {
+        throw new ForbiddenException(
+          'No tienes permisos para crear eventos en esta ciudad. Solo puedes crear eventos en: ' +
+            user.assignedCities.map((c) => c.name).join(', '),
+        );
+      }
+    }
     const status =
-      userRole === UserRole.LEVEL_4
+      user.role === UserRole.LEVEL_4
         ? EventStatus.PENDING
         : EventStatus.APPROVED;
 
     const event = this.eventsRepository.create({
       ...createEventDto,
-      createdById: userId,
+      createdById: user.id,
       status,
-      province: 'Buenos Aires', // Por defecto Buenos Aires
     });
 
     return this.eventsRepository.save(event);
@@ -66,7 +75,7 @@ export class EventsService {
     }
 
     if (city) {
-      where.city = Like(`%${city}%`);
+      where.cityId = city;
     }
 
     if (dateFrom && dateTo) {
@@ -121,7 +130,6 @@ export class EventsService {
   ): Promise<Event> {
     const event = await this.findOne(id);
 
-    // Solo el creador o admin/moderador pueden editar
     const isOwner = event.createdById === userId;
     const isModerator = [
       UserRole.LEVEL_1,
@@ -133,7 +141,6 @@ export class EventsService {
       throw new ForbiddenException('You can only edit your own events');
     }
 
-    // Solo admin/moderador pueden cambiar el estado
     if (updateEventDto.status && !isModerator) {
       throw new ForbiddenException('Only moderators can change event status');
     }
@@ -146,7 +153,6 @@ export class EventsService {
   async remove(id: string, userId: string, userRole: UserRole): Promise<void> {
     const event = await this.findOne(id);
 
-    // Solo el creador o admin pueden eliminar
     const isOwner = event.createdById === userId;
     const isAdmin = [UserRole.LEVEL_1, UserRole.LEVEL_2].includes(userRole);
 
@@ -157,7 +163,6 @@ export class EventsService {
     await this.eventsRepository.remove(event);
   }
 
-  // Obtener eventos aprobados para el mapa (sin paginación)
   async findApprovedForMap(): Promise<Event[]> {
     return this.eventsRepository.find({
       where: { status: EventStatus.APPROVED },
@@ -166,7 +171,6 @@ export class EventsService {
     });
   }
 
-  // Obtener eventos pendientes de aprobación
   async findPending(
     queryDto: QueryEventDto,
   ): Promise<PaginatedResponse<Event>> {
