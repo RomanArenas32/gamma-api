@@ -126,6 +126,7 @@ export class AuthController {
       lastName: user.lastName,
       role: user.role,
       isActive: user.isActive,
+      assignedCities: user.assignedCities || [],
     };
   }
 }
