@@ -21,16 +21,17 @@ export class EventsService {
     user: User,
   ): Promise<Event> {
     if (user.role === UserRole.LEVEL_4) {
-      if (!user.assignedPartidos || user.assignedPartidos.length === 0) {
+      if (!user.assignedCities || user.assignedCities.length === 0) {
         throw new ForbiddenException(
-          'No tienes partidos asignados. Contacta al administrador.',
+          'No tienes ciudades asignadas. Contacta al administrador.',
         );
       }
 
-      if (!user.assignedPartidos.includes(createEventDto.city)) {
+      const cityIds = user.assignedCities.map(city => city.id);
+      if (!cityIds.includes(createEventDto.cityId)) {
         throw new ForbiddenException(
-          'No tienes permisos para crear eventos en este partido. Solo puedes crear eventos en: ' +
-          user.assignedPartidos.join(', '),
+          'No tienes permisos para crear eventos en esta ciudad. Solo puedes crear eventos en: ' +
+          user.assignedCities.map(c => c.name).join(', '),
         );
       }
     }
@@ -78,7 +79,7 @@ export class EventsService {
     }
 
     if (city) {
-      where.city = Like(`%${city}%`);
+      where.cityId = city;
     }
 
     if (dateFrom && dateTo) {

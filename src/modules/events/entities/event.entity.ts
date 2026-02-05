@@ -8,7 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Partido } from '../enums/partido.enum';
+import { City } from '../../cities/entities/city.entity';
 
 export enum EventType {
   MANIFESTACION = 'manifestacion',
@@ -51,11 +51,12 @@ export class Event {
   @Column({ type: 'varchar', length: 500 })
   address: string;
 
-  @Column({
-    type: 'enum',
-    enum: Partido,
-  })
-  city: Partido;
+  @ManyToOne(() => City, { eager: true, nullable: false })
+  @JoinColumn({ name: 'cityId' })
+  city: City;
+
+  @Column()
+  cityId: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 7 })
   latitude: number;

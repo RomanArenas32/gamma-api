@@ -9,9 +9,9 @@ import {
   Min,
   Max,
   MaxLength,
+  IsUUID,
 } from 'class-validator';
 import { EventType } from '../entities/event.entity';
-import { Partido } from '../enums/partido.enum';
 
 export class CreateEventDto {
   @ApiProperty({
@@ -58,12 +58,11 @@ export class CreateEventDto {
   address: string;
 
   @ApiProperty({
-    description: 'Partido de la Provincia de Buenos Aires',
-    enum: Partido,
-    example: Partido.LA_PLATA,
+    description: 'ID de la ciudad (partido) de la Provincia de Buenos Aires',
+    example: 'uuid-ciudad',
   })
-  @IsEnum(Partido)
-  city: Partido;
+  @IsUUID('4')
+  cityId: string;
 
   @ApiProperty({
     description: 'Latitud de la ubicación',

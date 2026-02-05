@@ -5,10 +5,10 @@ import {
   IsEnum,
   IsOptional,
   IsArray,
+  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../common/types/roles';
-import { Partido } from '../../events/enums/partido.enum';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -59,13 +59,12 @@ export class CreateUserDto {
   role?: UserRole;
 
   @ApiPropertyOptional({
-    description: 'Partidos asignados (solo para usuarios level_4)',
-    enum: Partido,
-    isArray: true,
-    example: [Partido.AZUL, Partido.TAPALQUE],
+    description: 'IDs de ciudades asignadas (solo para usuarios level_4)',
+    type: [String],
+    example: ['uuid-1', 'uuid-2'],
   })
   @IsOptional()
   @IsArray()
-  @IsEnum(Partido, { each: true })
-  assignedPartidos?: Partido[];
+  @IsUUID('4', { each: true })
+  assignedCityIds?: string[];
 }

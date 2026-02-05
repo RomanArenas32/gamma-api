@@ -14,10 +14,14 @@ import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { Like, Not } from 'typeorm';
 import { UserRole } from '../../common/types/roles';
+import { CitiesService } from '../../cities/services/cities.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly citiesService: CitiesService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.usersRepository.findByUsername(
@@ -30,10 +34,18 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
+    // Prepare user data
+    const { assignedCityIds, ...userData } = createUserDto;
+
     const user = this.usersRepository.create({
-      ...createUserDto,
+      ...userData,
       password: hashedPassword,
     });
+
+    // Assign cities if provided
+    if (assignedCityIds && assignedCityIds.length > 0) {
+      user.assignedCities = await this.citiesService.findByIds(assignedCityIds);
+    }
 
     return this.usersRepository.save(user);
   }
@@ -109,7 +121,18 @@ export class UsersService {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
-    Object.assign(user, updateUserDto);
+    const { assignedCityIds, ...userData } = updateUserDto as any;
+
+    Object.assign(user, userData);
+
+    // Update assigned cities if provided
+    if (assignedCityIds !== undefined) {
+      if (assignedCityIds && assignedCityIds.length > 0) {
+        user.assignedCities = await this.citiesService.findByIds(assignedCityIds);
+      } else {
+        user.assignedCities = [];
+      }
+    }
 
     return this.usersRepository.save(user);
   }
