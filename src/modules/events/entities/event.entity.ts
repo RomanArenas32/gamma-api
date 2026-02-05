@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Partido } from '../enums/partido.enum';
 
 export enum EventType {
   MANIFESTACION = 'manifestacion',
@@ -50,11 +51,11 @@ export class Event {
   @Column({ type: 'varchar', length: 500 })
   address: string;
 
-  @Column({ type: 'varchar', length: 100 })
-  city: string;
-
-  @Column({ type: 'varchar', length: 100, default: 'Buenos Aires' })
-  province: string;
+  @Column({
+    type: 'enum',
+    enum: Partido,
+  })
+  city: Partido;
 
   @Column({ type: 'decimal', precision: 10, scale: 7 })
   latitude: number;

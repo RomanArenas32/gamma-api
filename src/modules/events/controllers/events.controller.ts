@@ -18,7 +18,8 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { EventsService } from '../services/events.service';
-import { CreateEventDto, UpdateEventDto, QueryEventDto } from '../dto';
+import { EventUpdatesService } from '../services/event-updates.service';
+import { CreateEventDto, UpdateEventDto, QueryEventDto, CreateEventUpdateDto } from '../dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/types/roles';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -28,7 +29,10 @@ import { User } from '../../users/entities/user.entity';
 @ApiBearerAuth('JWT-auth')
 @Controller('events')
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(
+    private readonly eventsService: EventsService,
+    private readonly eventUpdatesService: EventUpdatesService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -43,7 +47,7 @@ export class EventsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: User) {
-    return this.eventsService.create(createEventDto, user.id, user.role);
+    return this.eventsService.create(createEventDto, user);
   }
 
   @Get()
@@ -143,5 +147,74 @@ export class EventsController {
   @ApiResponse({ status: 404, description: 'Event not found' })
   remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.eventsService.remove(id, user.id, user.role);
+  }
+
+  // Event Updates routes
+  @Post(':id/updates')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Agregar actualización a un evento',
+    description: 'Registrar un nuevo seguimiento del evento con datos en tiempo real',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Event UUID',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Actualización registrada exitosamente',
+  })
+  @ApiResponse({ status: 404, description: 'Evento no encontrado' })
+  createUpdate(
+    @Param('id') eventId: string,
+    @Body() createEventUpdateDto: CreateEventUpdateDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventUpdatesService.create(
+      eventId,
+      createEventUpdateDto,
+      user.id,
+    );
+  }
+
+  @Get(':id/updates')
+  @ApiOperation({
+    summary: 'Obtener historial de actualizaciones de un evento',
+    description: 'Ver todas las actualizaciones registradas de un evento específico',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Event UUID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Historial de actualizaciones',
+  })
+  getUpdates(@Param('id') eventId: string) {
+    return this.eventUpdatesService.findByEvent(eventId);
+  }
+
+  @Delete(':eventId/updates/:updateId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Eliminar una actualización',
+    description: 'Solo el creador puede eliminar su actualización',
+  })
+  @ApiParam({
+    name: 'eventId',
+    description: 'Event UUID',
+  })
+  @ApiParam({
+    name: 'updateId',
+    description: 'Update UUID',
+  })
+  @ApiResponse({ status: 204, description: 'Actualización eliminada' })
+  @ApiResponse({ status: 403, description: 'Sin permisos' })
+  @ApiResponse({ status: 404, description: 'Actualización no encontrada' })
+  removeUpdate(
+    @Param('updateId') updateId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventUpdatesService.remove(updateId, user.id);
   }
 }

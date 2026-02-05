@@ -12,7 +12,8 @@ import {
 } from '../dto';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { Like } from 'typeorm';
+import { Like, Not } from 'typeorm';
+import { UserRole } from '../../common/types/roles';
 
 @Injectable()
 export class UsersService {
@@ -47,14 +48,16 @@ export class UsersService {
     const { page = 1, limit = 10, search } = paginationQuery;
     const skip = (page - 1) * limit;
 
-    // Build where clause for search
+    // Build where clause for search and exclude level_1 users
+    const baseWhere = { role: Not(UserRole.LEVEL_1) };
+    
     const where = search
       ? [
-          { username: Like(`%${search}%`) },
-          { firstName: Like(`%${search}%`) },
-          { lastName: Like(`%${search}%`) },
+          { ...baseWhere, username: Like(`%${search}%`) },
+          { ...baseWhere, firstName: Like(`%${search}%`) },
+          { ...baseWhere, lastName: Like(`%${search}%`) },
         ]
-      : undefined;
+      : baseWhere;
 
     // Get total count
     const total = await this.usersRepository.count(

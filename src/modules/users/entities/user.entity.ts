@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRole } from '../../common/types/roles';
+import { Partido } from '../../events/enums/partido.enum';
 
 @Entity('users')
 export class User {
@@ -33,6 +34,9 @@ export class User {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ type: 'simple-array', nullable: true })
+  assignedPartidos: Partido[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -11,6 +11,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { EventType } from '../entities/event.entity';
+import { Partido } from '../enums/partido.enum';
 
 export class CreateEventDto {
   @ApiProperty({
@@ -57,14 +58,12 @@ export class CreateEventDto {
   address: string;
 
   @ApiProperty({
-    description: 'Ciudad',
-    example: 'La Plata',
-    maxLength: 100,
+    description: 'Partido de la Provincia de Buenos Aires',
+    enum: Partido,
+    example: Partido.LA_PLATA,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  city: string;
+  @IsEnum(Partido)
+  city: Partido;
 
   @ApiProperty({
     description: 'Latitud de la ubicación',
