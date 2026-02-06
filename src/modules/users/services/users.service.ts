@@ -7,12 +7,12 @@ import { UsersRepository } from '../repositories/users.repository';
 import {
   CreateUserDto,
   UpdateUserDto,
-  PaginationQueryDto,
+  QueryUserDto,
   PaginatedResponse,
 } from '../dto';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { Like, Not } from 'typeorm';
+import { Like, Not, FindOptionsWhere } from 'typeorm';
 import { UserRole } from '../../common/types/roles';
 import { CitiesService } from '../../cities/services/cities.service';
 
@@ -55,15 +55,20 @@ export class UsersService {
   }
 
   async findAllPaginated(
-    paginationQuery: PaginationQueryDto,
+    queryUserDto: QueryUserDto,
   ): Promise<PaginatedResponse<User>> {
-    const { page = 1, limit = 10, search } = paginationQuery;
+    const { page = 1, limit = 10, search, role } = queryUserDto;
     const skip = (page - 1) * limit;
 
     // Build where clause for search and exclude level_1 users
-    const baseWhere = { role: Not(UserRole.LEVEL_1) };
+    const baseWhere: FindOptionsWhere<User> = { role: Not(UserRole.LEVEL_1) };
 
-    const where = search
+    // Add role filter if provided
+    if (role) {
+      baseWhere.role = role;
+    }
+
+    const where: FindOptionsWhere<User> | FindOptionsWhere<User>[] = search
       ? [
           { ...baseWhere, username: Like(`%${search}%`) },
           { ...baseWhere, firstName: Like(`%${search}%`) },
@@ -72,9 +77,9 @@ export class UsersService {
       : baseWhere;
 
     // Get total count
-    const total = await this.usersRepository.count(
-      where ? { where } : undefined,
-    );
+    const total = await this.usersRepository.count({
+      where: Array.isArray(where) ? where : where,
+    });
 
     // Get paginated users
     const data = await this.usersRepository.find({
@@ -121,9 +126,7 @@ export class UsersService {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
-    const { assignedCityIds, ...userData } = updateUserDto as UpdateUserDto & {
-      assignedCityIds?: string[];
-    };
+    const { assignedCityIds, ...userData } = updateUserDto;
 
     Object.assign(user, userData);
 
