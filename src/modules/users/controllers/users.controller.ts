@@ -19,7 +19,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from '../services/users.service';
-import { CreateUserDto, UpdateUserDto, PaginationQueryDto } from '../dto';
+import { CreateUserDto, UpdateUserDto, QueryUserDto } from '../dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/types/roles';
 
@@ -89,6 +89,13 @@ export class UsersController {
       'Search term to filter users by username, firstName, or lastName',
     example: 'john',
   })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    description: 'Filter users by role',
+    enum: UserRole,
+    example: 'level_4',
+  })
   @ApiResponse({
     status: 200,
     description: 'Paginated list of users',
@@ -122,8 +129,8 @@ export class UsersController {
     status: 403,
     description: 'Forbidden - Insufficient permissions',
   })
-  findAll(@Query() paginationQuery: PaginationQueryDto) {
-    return this.usersService.findAllPaginated(paginationQuery);
+  findAll(@Query() queryUserDto: QueryUserDto) {
+    return this.usersService.findAllPaginated(queryUserDto);
   }
 
   @Get(':id')
