@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { EventsRepository } from '../repositories/events.repository';
 import { CreateEventDto, UpdateEventDto, QueryEventDto } from '../dto';
@@ -10,10 +12,16 @@ import { PaginatedResponse } from '../../common/dto';
 import { Between, Like } from 'typeorm';
 import { UserRole } from '../../common/types/roles';
 import { User } from '../../users/entities/user.entity';
+import { EventUpdatesService } from './event-updates.service';
+import { EventUpdateType } from '../entities/event-update.entity';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly eventsRepository: EventsRepository) {}
+  constructor(
+    private readonly eventsRepository: EventsRepository,
+    @Inject(forwardRef(() => EventUpdatesService))
+    private readonly eventUpdatesService: EventUpdatesService,
+  ) {}
 
   async create(createEventDto: CreateEventDto, user: User): Promise<Event> {
     if (user.role === UserRole.LEVEL_4) {
@@ -42,7 +50,25 @@ export class EventsService {
       status,
     });
 
-    return this.eventsRepository.save(event);
+    const savedEvent = await this.eventsRepository.save(event);
+
+    // Create initial entry in event timeline
+    await this.eventUpdatesService.create(
+      savedEvent.id,
+      {
+        updateTime: createEventDto.eventDate,
+        updateType: EventUpdateType.EVENT_CREATED,
+        attendeeCount: createEventDto.attendeeCount || 0,
+        policePresence: false,
+        streetClosure: false,
+        notes: 'Event created - Initial state',
+        latitude: createEventDto.latitude,
+        longitude: createEventDto.longitude,
+      },
+      user.id,
+    );
+
+    return savedEvent;
   }
 
   async findAll(queryDto: QueryEventDto): Promise<PaginatedResponse<Event>> {
