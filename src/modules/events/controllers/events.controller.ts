@@ -158,9 +158,8 @@ export class EventsController {
   @Post(':id/updates')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Agregar actualización a un evento',
-    description:
-      'Registrar un nuevo seguimiento del evento con datos en tiempo real',
+    summary: 'Add update to an event',
+    description: 'Register a new event tracking entry with real-time data',
   })
   @ApiParam({
     name: 'id',
@@ -168,9 +167,9 @@ export class EventsController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Actualización registrada exitosamente',
+    description: 'Update registered successfully',
   })
-  @ApiResponse({ status: 404, description: 'Evento no encontrado' })
+  @ApiResponse({ status: 404, description: 'Event not found' })
   createUpdate(
     @Param('id') eventId: string,
     @Body() createEventUpdateDto: CreateEventUpdateDto,
@@ -183,11 +182,11 @@ export class EventsController {
     );
   }
 
-  @Get(':id/updates')
+  @Get(':id/updates/chart')
   @ApiOperation({
-    summary: 'Obtener historial de actualizaciones de un evento',
+    summary: 'Get timeline data optimized for charts',
     description:
-      'Ver todas las actualizaciones registradas de un evento específico',
+      'Returns timeline data in format optimized for creating temporal charts',
   })
   @ApiParam({
     name: 'id',
@@ -195,7 +194,42 @@ export class EventsController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Historial de actualizaciones',
+    description: 'Data for temporal charts',
+  })
+  getTimelineChart(@Param('id') eventId: string) {
+    return this.eventUpdatesService.getTimelineForChart(eventId);
+  }
+
+  @Get(':id/updates/stats')
+  @ApiOperation({
+    summary: 'Get event timeline statistics',
+    description:
+      'View summarized timeline statistics: attendance peaks, duration, etc.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Event UUID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Timeline statistics',
+  })
+  getUpdateStats(@Param('id') eventId: string) {
+    return this.eventUpdatesService.getEventStats(eventId);
+  }
+
+  @Get(':id/updates')
+  @ApiOperation({
+    summary: 'Get event update history',
+    description: 'View all registered updates for a specific event',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Event UUID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Update history',
   })
   getUpdates(@Param('id') eventId: string) {
     return this.eventUpdatesService.findByEvent(eventId);
@@ -204,8 +238,8 @@ export class EventsController {
   @Delete(':eventId/updates/:updateId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary: 'Eliminar una actualización',
-    description: 'Solo el creador puede eliminar su actualización',
+    summary: 'Delete an update',
+    description: 'Only the creator can delete their update',
   })
   @ApiParam({
     name: 'eventId',
@@ -215,9 +249,9 @@ export class EventsController {
     name: 'updateId',
     description: 'Update UUID',
   })
-  @ApiResponse({ status: 204, description: 'Actualización eliminada' })
-  @ApiResponse({ status: 403, description: 'Sin permisos' })
-  @ApiResponse({ status: 404, description: 'Actualización no encontrada' })
+  @ApiResponse({ status: 204, description: 'Update deleted' })
+  @ApiResponse({ status: 403, description: 'No permissions' })
+  @ApiResponse({ status: 404, description: 'Update not found' })
   removeUpdate(@Param('updateId') updateId: string, @CurrentUser() user: User) {
     return this.eventUpdatesService.remove(updateId, user.id);
   }
