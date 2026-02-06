@@ -68,7 +68,8 @@ export class EventsService {
       user.id,
     );
 
-    return savedEvent;
+    // Reload the event with all relations to ensure proper serialization
+    return this.findOne(savedEvent.id);
   }
 
   async findAll(queryDto: QueryEventDto): Promise<PaginatedResponse<Event>> {
